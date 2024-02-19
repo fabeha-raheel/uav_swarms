@@ -126,6 +126,12 @@ Note: if you get an error while running this command, simply reboot your compute
 
 Note: After all the installation steps are complete, it is recommended to reboot the PC.
 
+Basic commands to test if the drone is working:
+mode GUIDED
+arm throttle
+takeoff 1
+mode LAND
+
 
 ## References:
 1. [Intelligent Quads Tutorials](https://github.com/Intelligent-Quads/iq_tutorials)
