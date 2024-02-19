@@ -118,3 +118,16 @@ In one terminal, run Gazebo:
 gazebo --verbose ~/ardupilot_gazebo/worlds/iris_arducopter_runway.world
 ```
 In second terminal, run ArduPilot SITL:
+```bash
+cd ~/ardupilot/ArduCopter/
+sim_vehicle.py -v ArduCopter -f gazebo-iris --console
+```
+Note: if you get an error while running this command, simply reboot your computer and try again. 
+
+Note: After all the installation steps are complete, it is recommended to reboot the PC.
+
+
+## References:
+1. [Intelligent Quads Tutorials](https://github.com/Intelligent-Quads/iq_tutorials)
+2. [ROS Tutorials](http://wiki.ros.org/ROS/Tutorials)
+3. [ArduPilot - Installing ROS](http://wiki.ros.org/ROS/Tutorials)
