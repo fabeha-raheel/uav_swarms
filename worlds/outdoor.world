@@ -95,16 +95,25 @@
       <uri>model://grass_plane</uri>
     </include>
     
-    <!-- Drone model -->
-    <!-- <include>
-      <uri>model://typhoon_h480_ardupilot</uri>
-      <pose>0 0 0 0 0 0</pose>
-    </include> -->
-    <model name="iris">
+    <model name="drone1">
       <include>
-        <uri>model://drone_with_camera</uri>
+        <uri>model://drone_with_camera_1</uri>
       </include>
       <pose> 0 0 0 0 0 0</pose>
+    </model>
+
+    <model name="drone2">
+      <include>
+        <uri>model://drone_with_camera_2</uri>
+      </include>
+      <pose> -2 -2 0 0 0 0</pose>
+    </model>
+
+    <model name="drone3">
+      <include>
+        <uri>model://drone_with_camera_3</uri>
+      </include>
+      <pose> -2 2 0 0 0 0</pose>
     </model>
     
   </world>
