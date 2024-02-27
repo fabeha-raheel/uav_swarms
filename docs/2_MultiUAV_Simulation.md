@@ -1,5 +1,12 @@
 # Multi UAV Simulation using ArduPilot
 
+## Clone the uav_swarms repository
+Make sure that ROS Noetic is installed and catkin workspace has been set up.
+```bash
+cd ~/catkin_ws/src
+git clone https://github.com/fabeha-raheel/uav_swarms.git
+```
+
 ## (No need to follow these steps!!) Modifying Iris Drone Model for Multi-UAV Simulation
 
 Copy the iris drone model files and rename the model directories to distinguish between multiple drones (drones can be numbered as 1, 2, 3, etc).
