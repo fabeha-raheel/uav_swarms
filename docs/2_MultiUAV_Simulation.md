@@ -15,6 +15,7 @@ In order to simulate drones with different parameters we will need to create our
 Open the file ```ardupilot/Tools/autotest/pysim/vehicleinfo.py``` and add the following lines under the SIM section.
 
 ```python
+            # Added for Multi-UAV Simulation
             "gazebo-iris1": {
                 "waf_target": "bin/arducopter",
                 "default_params_filename": ["default_params/copter.parm",
@@ -29,6 +30,8 @@ Open the file ```ardupilot/Tools/autotest/pysim/vehicleinfo.py``` and add the fo
                 "waf_target": "bin/arducopter",
                 "default_params_filename": ["default_params/copter.parm",
                                             "default_params/gazebo-iris3.parm"],
+            },
+            ###
             },
 ```
 
