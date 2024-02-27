@@ -1,6 +1,6 @@
 # Multi UAV Simulation using ArduPilot
 
-## Modifying Iris Drone Model for Multi-UAV Simulation
+## (No need to follow these steps!!) Modifying Iris Drone Model for Multi-UAV Simulation
 
 Copy the iris drone model files and rename the model directories to distinguish between multiple drones (drones can be numbered as 1, 2, 3, etc).
 
