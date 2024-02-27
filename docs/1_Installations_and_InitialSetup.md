@@ -117,6 +117,8 @@ In one terminal, run Gazebo:
 ```bash
 gazebo --verbose ~/ardupilot_gazebo/worlds/iris_arducopter_runway.world
 ```
+**Note:** Loading gazebo for the first time might take a long time especially when the internet is connected. This is because Gazebo installs the default model files from the OSRF website when it is launched for the first time.
+
 In second terminal, run ArduPilot SITL:
 ```bash
 cd ~/ardupilot/ArduCopter/
