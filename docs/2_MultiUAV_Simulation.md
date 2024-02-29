@@ -61,7 +61,7 @@ roslaunch uav_swarms outdoor_world.launch
 
 In another terminal, navigate into the ardupilot/ArduCopter directory:
 ```bash
-cd ardupilot/ArduCopter
+cd ~/ardupilot/ArduCopter
 ```
 Launch the ArduPilot SITL instances for the drones in separate terminals. (Make sure that you are in the correct directory.) For the first drone:
 ```bash
