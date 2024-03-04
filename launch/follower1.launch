@@ -3,9 +3,10 @@
 
         <!-- Launch MAVROS -->
         <include file="$(find uav_swarms)/launch/apm.launch" >
+                <!-- url for sitl -->
                 <arg name="fcu_url" value="/dev/ttyACM0:57600" />
                 <arg name="mavros_ns" value="/drone2" /> 
-                <arg name="tgt_system" value="2" />   
+                <arg name="tgt_system" value="2" />  
         </include>
 
 </launch>
