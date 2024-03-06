@@ -3,6 +3,7 @@
 import rospy
 
 from sensor_msgs.msg import NavSatFix
+from nav_msgs.msg import Odometry
 from mavros_msgs.srv import CommandBool, CommandTOL, SetMode
 
 from Drone_Data import Drone_Data
@@ -29,6 +30,8 @@ class SwarmLeader():
         
         self.GPS_Fix = None
         
+        self.takeoff_altitude = 0
+        
         rospy.init_node('Swarm_Leader')
         
         # Initialize Leader and Followers subscribers
@@ -40,6 +43,7 @@ class SwarmLeader():
     def init_subscribers(self):
         # create a global_position_subcriber for the leader
         self.leader_global_position_subscriber = rospy.Subscriber(self.leader_data.header.name + '/mavros/global_position/global',NavSatFix, self.leader_GPS_Subscriber_callback)
+        self.leader_local_position_subscriber = rospy.Subscriber(self.leader_data.header.name + '/mavros/global_position/local',Odometry, self.leader_LocalPos_Subscriber_callback)
     
         # initialize the global position subscribers each of the followers
         for i in range(self.n_followers):
@@ -70,6 +74,8 @@ class SwarmLeader():
             rospy.loginfo(armResponse)
         except rospy.ServiceException as e:
             print("Service call failed: %s" %e)
+            
+        return armResponse
 
     def disarm(self):
         rospy.wait_for_service(self.leader_data.header.name + '/mavros/cmd/arming', timeout=3)
@@ -79,6 +85,8 @@ class SwarmLeader():
             rospy.loginfo(armResponse)
         except rospy.ServiceException as e:
             print("Service call failed: %s" %e)
+            
+        return armResponse
             
             
     def set_mode(self, mode):
@@ -90,6 +98,8 @@ class SwarmLeader():
         except rospy.ServiceException as e:
             print("Set mode failed: %s" %e)
             
+        return response
+            
     def takeoff(self, altitude=5, latitude=0, longitude=0, min_pitch=0, yaw=0):
         rospy.wait_for_service(self.leader_data.header.name + '/mavros/cmd/takeoff', timeout=3)
         try:
@@ -97,7 +107,26 @@ class SwarmLeader():
             response = takeoff_service(altitude=altitude, latitude=latitude, longitude=longitude, min_pitch=min_pitch, yaw=yaw)
             rospy.loginfo(response)
         except rospy.ServiceException as e:
-            print("Takeoff failed: %s" %e)     
+            print("Takeoff failed: %s" %e)
+            
+        self.takeoff_altitude = altitude
+            
+        return response
+    
+    def check_takeoff_complete(self):
+        error = abs(self.takeoff_altitude - self.leader_data.local_position.z)
+        print("Takeoff error: ", error)
+        if error <= 0.2:
+            return True
+        else:
+            return False
+        
+    def check_land_complete(self):
+        if self.leader_data.local_position.z <= 0.5:
+            return True
+        else:
+            return False
+                 
     
     def leader_GPS_Subscriber_callback(self, mssg):
         self.GPS_Fix = mssg.status.status
@@ -105,4 +134,9 @@ class SwarmLeader():
         self.leader_data.global_position.latitude = mssg.latitude
         self.leader_data.global_position.longitude = mssg.longitude
         self.leader_data.global_position.altitude = mssg.altitude
+        
+    def leader_LocalPos_Subscriber_callback(self, mssg):
+        self.leader_data.local_position.x = mssg.pose.pose.position.x
+        self.leader_data.local_position.y = mssg.pose.pose.position.y
+        self.leader_data.local_position.z = mssg.pose.pose.position.z
         

@@ -6,8 +6,6 @@ from SwarmLeader import *
 
 leader = SwarmLeader(name='drone1', n_followers=2)
 
-# leader.swarm_arm_and_takeoff()
-
 print("Setting Leader's Mode to GUIDED")
 leader.set_mode(mode='GUIDED')
 
