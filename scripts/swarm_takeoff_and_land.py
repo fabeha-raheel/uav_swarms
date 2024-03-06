@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import time
+
 from SwarmLeader import *
 
 leader = SwarmLeader(name='drone1', n_followers=2)
