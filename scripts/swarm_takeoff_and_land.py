@@ -5,7 +5,7 @@ import sys
 
 from SwarmLeader import *
 
-leader = SwarmLeader(name='drone1', n_followers=2)
+leader = SwarmLeader(name='drone1', n_followers=1)
 
 rospy.loginfo("Setting Leader's Mode to GUIDED")
 leader_response = leader.set_mode(mode='GUIDED')
