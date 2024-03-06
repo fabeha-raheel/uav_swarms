@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import time
 import rospy
 
 from sensor_msgs.msg import NavSatFix
@@ -106,40 +105,4 @@ class SwarmLeader():
         self.leader_data.global_position.latitude = mssg.latitude
         self.leader_data.global_position.longitude = mssg.longitude
         self.leader_data.global_position.altitude = mssg.altitude
-        
-    def swarm_arm_and_takeoff(self):
-        print("Setting Leader's Mode to GUIDED")
-        self.set_mode(mode='GUIDED')
-        
-        print("Setting Followers Mode to GUIDED")
-        for follower in self.followers:
-            follower.set_mode(mode='GUIDED')
-        
-        print("Arming Leader")
-        self.arm()
-        
-        print("Arming Followers")
-        for follower in self.followers:
-            follower.arm()
-            
-        print("Leader taking off...")
-        self.takeoff(altitude=(2*self.n_followers)+2)
-        
-        print("Followers taking off...")
-        for follower in self.followers:
-            follower_index = self.followers.index(follower)
-            follower.takeoff(altitude=(2*(self.n_followers-(follower_index+1)))+2)
-            
-        # Wait for few seconds
-        time.sleep(10)
-        
-        # Land all drones
-        print("Landing followers...")
-        for follower in self.followers:
-            follower.set_mode(mode='LAND')
-            
-        time.sleep(2)
-        
-        print("Landing Leader...")
-        self.set_mode(mode="LAND")
         
