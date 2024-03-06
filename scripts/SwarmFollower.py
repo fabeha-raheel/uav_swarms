@@ -4,6 +4,7 @@ import rospy
 
 from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Odometry
+from mavros_msgs.msg import GlobalPositionTarget
 from mavros_msgs.srv import CommandBool, CommandTOL, SetMode
 
 from Drone_Data import Drone_Data
@@ -19,6 +20,9 @@ class SwarmFollower():
         # create a global_position_subcriber for the follower
         self.follower_global_position_subscriber = rospy.Subscriber(self.data.header.name + '/mavros/global_position/global',NavSatFix, self.follower_GPS_Subscriber_callback)
         self.follower_local_position_subscriber = rospy.Subscriber(self.data.header.name + '/mavros/global_position/local',Odometry, self.follower_LocalPos_Subscriber_callback)
+        
+    def init_publishers(self):
+        self.follower_global_setpoint_publisher = rospy.Publisher(self.data.header.name + '/mavros/setpoint_raw/global',GlobalPositionTarget, queue_size=1)
         
     def arm(self):
         rospy.wait_for_service(self.data.header.name + '/mavros/cmd/arming', timeout=3)

@@ -1,9 +1,12 @@
 #!/usr/bin/python
 
+import math
 import rospy
 
+from std_msgs.msg import Float64
 from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Odometry
+from mavros_msgs.msg import GlobalPositionTarget
 from mavros_msgs.srv import CommandBool, CommandTOL, SetMode
 
 from Drone_Data import Drone_Data
@@ -36,18 +39,26 @@ class SwarmLeader():
         
         # Initialize Leader and Followers subscribers
         self.init_subscribers()
+        self.init_publishers()
         
         # Wait for GPS Fix
         self.wait_for_GPS_Fix()            
         
     def init_subscribers(self):
-        # create a global_position_subcriber for the leader
         self.leader_global_position_subscriber = rospy.Subscriber(self.leader_data.header.name + '/mavros/global_position/global',NavSatFix, self.leader_GPS_Subscriber_callback)
         self.leader_local_position_subscriber = rospy.Subscriber(self.leader_data.header.name + '/mavros/global_position/local',Odometry, self.leader_LocalPos_Subscriber_callback)
+        self.leader_heading_subscriber = rospy.Subscriber(self.leader_data.header.name + '/mavros/global_position/compass_hdg',Float64, self.leader_Heading_Subscriber_callback)
     
-        # initialize the global position subscribers each of the followers
+        # initialize the subscribers for each of the followers
         for i in range(self.n_followers):
             self.followers[i].init_subscribers()
+            
+    def init_publishers(self):
+        self.leader_global_setpoint_publisher = rospy.Publisher(self.leader_data.header.name + '/mavros/setpoint_raw/global',GlobalPositionTarget, queue_size=1)
+        
+        # initialize the publishers for each of the followers
+        for i in range(self.n_followers):
+            self.followers[i].init_publishers()
             
     def wait_for_GPS_Fix(self):
         while True:
@@ -113,6 +124,17 @@ class SwarmLeader():
             
         return response
     
+    def goto_location(self, latitude, longitude, altitude, type_mask=4088, coordinate_frame=6):
+        
+        command = GlobalPositionTarget()
+        command.altitude = altitude
+        command.latitude = latitude
+        command.longitude = longitude
+        command.type_mask=type_mask
+        command.coordinate_frame=coordinate_frame
+        
+        self.leader_global_setpoint_publisher.publish(command)
+    
     def check_takeoff_complete(self):
         error = abs(self.takeoff_altitude - self.leader_data.local_position.z)
         print("Takeoff error: ", error)
@@ -126,8 +148,42 @@ class SwarmLeader():
             return True
         else:
             return False
+        
+    def check_target_location_reached(self, location):
+        if 
+        
+    def calculate_follower_coordinates(self):
+        
+        # Earth radius in meters
+        EARTH_RADIUS = 6378137.0  # Approximate value for WGS84 ellipsoid
+        
+        follower_coordinates = []
+
+        # Convert latitude and longitude from degrees to radians
+        leader_latitude_rad = math.radians(self.leader_data.global_position.latitude)
+        leader_longitude_rad = math.radians(self.leader_data.global_position.longitude)
+
+        # Convert heading from degrees to radians
+        heading_rad = math.radians(self.leader_data.euler_orientation.yaw)
+
+        # Calculate initial change in latitude and longitude (2 meters behind the leader)
+        delta_latitude = 2 / EARTH_RADIUS
+        delta_longitude = 2 / (EARTH_RADIUS * math.cos(leader_latitude_rad))
+
+        for i in range(self.n_followers):
+            # Calculate new latitude and longitude for each follower
+            new_latitude_rad = leader_latitude_rad - ((i+1) * delta_latitude)
+            new_longitude_rad = leader_longitude_rad - ((i+1) * delta_longitude)
+
+            # Convert new latitude and longitude from radians to degrees
+            new_latitude = math.degrees(new_latitude_rad)
+            new_longitude = math.degrees(new_longitude_rad)
+
+            # Add the coordinates to the list
+            follower_coordinates.append((new_latitude, new_longitude))
+
+        return follower_coordinates
                  
-    
     def leader_GPS_Subscriber_callback(self, mssg):
         self.GPS_Fix = mssg.status.status
 
@@ -140,3 +196,79 @@ class SwarmLeader():
         self.leader_data.local_position.y = mssg.pose.pose.position.y
         self.leader_data.local_position.z = mssg.pose.pose.position.z
         
+    def leader_Heading_Subscriber_callback(self,mssg):
+        self.leader_data.euler_orientation.yaw = mssg.data
+        
+"""
+Functions to make it easy to convert between the different frames-of-reference. In particular these
+make it easy to navigate in terms of "metres from the current position" when using commands that take 
+absolute positions in decimal degrees.
+
+The methods are approximations only, and may be less accurate over longer distances, and when close 
+to the Earth's poles.
+
+Specifically, it provides:
+* get_location_metres - Get LocationGlobal (decimal degrees) at distance (m) North & East of a given LocationGlobal.
+* get_distance_metres - Get the distance between two LocationGlobal objects in metres
+* get_bearing - Get the bearing in degrees to a LocationGlobal
+"""
+
+def get_location_metres(original_location, dNorth, dEast):
+    """
+    Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
+    specified `original_location`. The returned LocationGlobal has the same `alt` value
+    as `original_location`.
+
+    The function is useful when you want to move the vehicle around specifying locations relative to 
+    the current vehicle position.
+
+    The algorithm is relatively accurate over small distances (10m within 1km) except close to the poles.
+
+    For more information see:
+    http://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
+    """
+    earth_radius = 6378137.0 #Radius of "spherical" earth
+    #Coordinate offsets in radians
+    dLat = dNorth/earth_radius
+    dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
+
+    #New position in decimal degrees
+    newlat = original_location.lat + (dLat * 180/math.pi)
+    newlon = original_location.lon + (dLon * 180/math.pi)
+    if type(original_location) is LocationGlobal:
+        targetlocation=LocationGlobal(newlat, newlon,original_location.alt)
+    elif type(original_location) is LocationGlobalRelative:
+        targetlocation=LocationGlobalRelative(newlat, newlon,original_location.alt)
+    else:
+        raise Exception("Invalid Location object passed")
+        
+    return targetlocation;
+
+
+def get_distance_metres(aLocation1, aLocation2):
+    """
+    Returns the ground distance in metres between two LocationGlobal objects.
+
+    This method is an approximation, and will not be accurate over large distances and close to the 
+    earth's poles. It comes from the ArduPilot test code: 
+    https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py
+    """
+    dlat = aLocation2.lat - aLocation1.lat
+    dlong = aLocation2.lon - aLocation1.lon
+    return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
+
+
+def get_bearing(aLocation1, aLocation2):
+    """
+    Returns the bearing between the two LocationGlobal objects passed as parameters.
+
+    This method is an approximation, and may not be accurate over large distances and close to the 
+    earth's poles. It comes from the ArduPilot test code: 
+    https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py
+    """	
+    off_x = aLocation2.lon - aLocation1.lon
+    off_y = aLocation2.lat - aLocation1.lat
+    bearing = 90.00 + math.atan2(-off_y, off_x) * 57.2957795
+    if bearing < 0:
+        bearing += 360.00
+    return bearing;
