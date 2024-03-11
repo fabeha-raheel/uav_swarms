@@ -21,6 +21,7 @@ class SwarmLeader(MAVROS_Drone):
         for i in range(n_followers):
             this_follower = SwarmFollower()
             this_follower.data.header.name = 'drone'+str(i+2)
+            this_follower.ns = 'drone'+str(i+2)
             this_follower.data.header.id = i+2
             self.followers.append(this_follower)
         
