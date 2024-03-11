@@ -51,9 +51,9 @@ else:
     rospy.logerr("Leader failed to takeoff. Aborting Mission...")
     sys.exit(1)
     
-# rospy.loginfo("Getting Follower Coordinates")
-# follower_coordinates = leader.calculate_follower_coordinates()
-# heading = leader.data.euler_orientation.yaw
+rospy.loginfo("Getting Follower Coordinates")
+follower_coordinates = leader.calculate_follower_coordinates()
+heading = leader.data.euler_orientation.yaw
 
 rospy.loginfo("Arming Followers")
 for follower in leader.followers:
@@ -85,11 +85,11 @@ for follower in leader.followers:
         # leader.followers.remove(follower)
         # leader.n_followers = leader.n_followers - 1
         
-# # Line Formation
-# for follower in leader.followers:
-#     follower_index = leader.followers.index(follower)
-#     follower.goto_location(latitude=follower_coordinates[follower_index][0], longitude=follower_coordinates[follower_index][1])
-#     time.sleep(2)
+# Line Formation
+for follower in leader.followers:
+    follower_index = leader.followers.index(follower)
+    follower.goto_location(latitude=follower_coordinates[follower_index][0], longitude=follower_coordinates[follower_index][1], altitude=(2*(leader.n_followers-(follower_index+1)))+2)
+    time.sleep(2)
     
 # Hover for few seconds
 rospy.loginfo("Takeoff Complete. Hovering...")
