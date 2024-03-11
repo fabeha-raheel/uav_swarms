@@ -3,12 +3,13 @@
 import math
 import rospy
 
-from MAVROS_Drone import MAVROS_Drone
-from SwarmFollower import SwarmFollower
+from Swarm_Drone_API import MAVROS_Drone
+from SwarmFollower_API import SwarmFollower
 
 
 class SwarmLeader(MAVROS_Drone):
-    def __init__(self, name='drone1', n_followers=2) -> None:
+    def __init__(self, name='drone1', n_followers=2, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
         self.ns = name
         self.data.header.name = name
@@ -69,11 +70,11 @@ class SwarmLeader(MAVROS_Drone):
         follower_coordinates = []
 
         # Convert latitude and longitude from degrees to radians
-        leader_latitude_rad = math.radians(self.leader_data.global_position.latitude)
-        leader_longitude_rad = math.radians(self.leader_data.global_position.longitude)
+        leader_latitude_rad = math.radians(self.data.global_position.latitude)
+        leader_longitude_rad = math.radians(self.data.global_position.longitude)
 
         # Convert heading from degrees to radians
-        heading_rad = math.radians(self.leader_data.euler_orientation.yaw)
+        heading_rad = math.radians(self.data.euler_orientation.yaw)
 
         # Calculate initial change in latitude and longitude (2 meters behind the leader)
         delta_latitude = 2 / EARTH_RADIUS

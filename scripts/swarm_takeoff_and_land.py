@@ -3,7 +3,7 @@
 import time
 import sys
 
-from SwarmLeader import *
+from SwarmLeader_API import *
 
 leader = SwarmLeader(name='drone1', n_followers=2)
 

@@ -10,7 +10,6 @@ from mavros_msgs.msg import GlobalPositionTarget
 from mavros_msgs.srv import CommandBool, CommandTOL, SetMode
 
 from Drone_Data import Drone_Data
-from SwarmFollower import SwarmFollower
 
 
 class MAVROS_Drone():
@@ -167,7 +166,7 @@ class MAVROS_Drone():
         self.data.local_position.y = mssg.pose.pose.position.y
         self.data.local_position.z = mssg.pose.pose.position.z
         
-    def leader_Heading_Subscriber_callback(self,mssg):
+    def hdg_sub_cb(self,mssg):
         self.data.euler_orientation.yaw = mssg.data
         
 # """

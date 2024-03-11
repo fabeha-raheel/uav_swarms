@@ -1,9 +1,10 @@
 #!/usr/bin/python
 
-from MAVROS_Drone import MAVROS_Drone
+from Swarm_Drone_API import MAVROS_Drone
 
 class SwarmFollower(MAVROS_Drone):
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         pass
         
         
