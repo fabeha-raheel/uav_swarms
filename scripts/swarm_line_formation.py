@@ -53,7 +53,6 @@ else:
     
 rospy.loginfo("Getting Follower Coordinates")
 follower_coordinates = leader.calculate_follower_coordinates()
-heading = leader.data.euler_orientation.yaw
 
 rospy.loginfo("Arming Followers")
 for follower in leader.followers:
@@ -85,10 +84,16 @@ for follower in leader.followers:
         # leader.followers.remove(follower)
         # leader.n_followers = leader.n_followers - 1
         
+heading = leader.data.euler_orientation.yaw
+        
 # Line Formation
 for follower in leader.followers:
     follower_index = leader.followers.index(follower)
-    follower.goto_location(latitude=follower_coordinates[follower_index][0], longitude=follower_coordinates[follower_index][1], altitude=(2*(leader.n_followers-(follower_index+1)))+2)
+    # follower.goto_location(latitude=follower_coordinates[follower_index][0], longitude=follower_coordinates[follower_index][1], altitude=(2*(leader.n_followers-(follower_index+1)))+2)
+    follower.goto_location_heading(latitude=follower_coordinates[follower_index][0], 
+                                   longitude=follower_coordinates[follower_index][1], 
+                                   altitude=(2*(leader.n_followers-(follower_index+1)))+2,
+                                   yaw=heading)
     time.sleep(2)
     
 # Hover for few seconds
@@ -98,6 +103,7 @@ time.sleep(5)
 # Land all drones
 rospy.loginfo("Landing followers...")
 for follower in leader.followers:
+    # follower_response = follower.set_mode(mode='LAND')
     follower_response = follower.set_mode(mode='RTL')
     
 rospy.loginfo("Landing Leader...")

@@ -139,6 +139,18 @@ class MAVROS_Drone():
         command.coordinate_frame=coordinate_frame
         
         self.global_setpoint_publisher.publish(command)
+        
+    def goto_location_heading(self, latitude, longitude, altitude, yaw, type_mask=4088, coordinate_frame=6):
+        
+        command = GlobalPositionTarget()
+        command.altitude = altitude
+        command.latitude = latitude
+        command.longitude = longitude
+        command.yaw = yaw
+        command.type_mask=GlobalPositionTarget.IGNORE_VX | GlobalPositionTarget.IGNORE_VY | GlobalPositionTarget.IGNORE_VZ | GlobalPositionTarget.IGNORE_AFX | GlobalPositionTarget.IGNORE_AFY | GlobalPositionTarget.IGNORE_AFZ | GlobalPositionTarget.IGNORE_YAW_RATE
+        command.coordinate_frame=coordinate_frame
+        
+        self.global_setpoint_publisher.publish(command)
     
     def check_takeoff_complete(self):
         if abs(self.takeoff_altitude - self.data.local_position.z) <= 0.2:
