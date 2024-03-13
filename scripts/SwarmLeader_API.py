@@ -62,7 +62,7 @@ class SwarmLeader(MAVROS_Drone):
         else:
             return False
     
-    def calculate_line_formation_coordinates(self):
+    def calculate_line_formation_coordinates(self, offset=2):
         follower_coordinates = []
         
         for i in range(self.n_followers):
@@ -73,7 +73,45 @@ class SwarmLeader(MAVROS_Drone):
             follower_coordinates.append(new_coords)
             
         return follower_coordinates
+    
+    def calculate_flock_formation_coordinates(self, offset=2):
+        follower_coordinates = []
         
+        if len(self.n_followers)%2 == 0:    # if number of followers is even
+            for i in range(int(self.n_followers / 2)):
+                coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
+                                                        longitude=self.data.global_position.longitude,
+                                                        dNorth=-1*offset*(i+1),
+                                                        dEast=offset*(i+1))
+                follower_coordinates.append(coords)
+                
+                coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
+                                                        longitude=self.data.global_position.longitude,
+                                                        dNorth=-1*offset*(i+1),
+                                                        dEast=-1*offset*(i+1))
+                follower_coordinates.append(coords)
+        
+        else:                               # else if number of followers is odd
+            coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
+                                                    longitude=self.data.global_position.longitude,
+                                                    dNorth=-1*offset,
+                                                    dEast=0)
+            follower_coordinates.append(coords)
+            
+            for i in range(int((self.n_followers - 1) / 2)):
+                coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
+                                                        longitude=self.data.global_position.longitude,
+                                                        dNorth=-1*offset*(i+2),
+                                                        dEast=offset*(i+1))
+                follower_coordinates.append(coords)
+                
+                coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
+                                                        longitude=self.data.global_position.longitude,
+                                                        dNorth=-1*offset*(i+2),
+                                                        dEast=-1*offset*(i+1))
+                follower_coordinates.append(coords)
+        
+        return follower_coordinates
 # """
 # Functions to make it easy to convert between the different frames-of-reference. In particular these
 # make it easy to navigate in terms of "metres from the current position" when using commands that take 
