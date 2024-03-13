@@ -209,6 +209,47 @@ class MAVROS_Drone():
     def hdg_sub_cb(self,mssg):
         self.data.euler_orientation.yaw = mssg.data
         
+    def offset_location(self, latitude, longitude, dNorth, dEast):
+        earth_radius = 6378137.0 #Radius of "spherical" earth
+        # Coordinate offsets in radians
+        dLat = dNorth/earth_radius
+        dLon = dEast/(earth_radius*math.cos(math.pi*latitude/180))
+        #New position in decimal degrees
+        newlat = latitude + (dLat * 180/math.pi)
+        newlon = longitude + (dLon * 180/math.pi)
+        targetlocation = (newlat, newlon)
+            
+        return targetlocation
+    
+    def ellipsoid_offset_location(self, latitude, longitude, dNorth, dEast):
+        # WGS84 Earth semi-major and semi-minor axes
+        a = 6378137.0  # semi-major axis in meters
+        b = 6356752.314245  # semi-minor axis in meters
+
+        # Eccentricity squared
+        e_squared = 1 - (b**2 / a**2)
+
+        # Radius of curvature in the prime vertical
+        N = a / math.sqrt(1 - e_squared * math.sin(math.radians(latitude))**2)
+
+        # Latitude offset in radians
+        dLat = dNorth / N
+
+        # Longitude offset in radians
+        dLon = dEast / (N * math.cos(math.radians(latitude)))
+
+        # Update latitude and longitude in radians
+        new_lat_radians = math.radians(latitude) + dLat
+        new_lon_radians = math.radians(longitude) + dLon
+
+        # Convert back to decimal degrees
+        new_lat = math.degrees(new_lat_radians)
+        new_lon = math.degrees(new_lon_radians)
+
+        target_location = (new_lat, new_lon)
+        
+        return target_location
+        
 # """
 # Functions to make it easy to convert between the different frames-of-reference. In particular these
 # make it easy to navigate in terms of "metres from the current position" when using commands that take 

@@ -90,7 +90,7 @@ heading = leader.data.euler_orientation.yaw
 for follower in leader.followers:
     follower_index = leader.followers.index(follower)
     rospy.loginfo("Setting RTL_ALT param of {}.".format(follower.data.header.name))
-    follower.set_param(param_name="RTL_ALT", param_value=int((2*(leader.n_followers-(follower_index+1)))+2))
+    follower.set_param(param_name="RTL_ALT", param_value=(2*(leader.n_followers-(follower_index+1)))+2)
     # follower.goto_location(latitude=follower_coordinates[follower_index][0], longitude=follower_coordinates[follower_index][1], altitude=(2*(leader.n_followers-(follower_index+1)))+2)
     follower.goto_location_heading(latitude=follower_coordinates[follower_index][0], 
                                    longitude=follower_coordinates[follower_index][1], 

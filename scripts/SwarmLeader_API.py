@@ -61,37 +61,17 @@ class SwarmLeader(MAVROS_Drone):
             return True
         else:
             return False
-        
+    
     def calculate_follower_coordinates(self):
-        
-        # Earth radius in meters
-        EARTH_RADIUS = 6378137.0  # Approximate value for WGS84 ellipsoid
-        
         follower_coordinates = []
-
-        # Convert latitude and longitude from degrees to radians
-        leader_latitude_rad = math.radians(self.data.global_position.latitude)
-        leader_longitude_rad = math.radians(self.data.global_position.longitude)
-
-        # Convert heading from degrees to radians
-        heading_rad = math.radians(self.data.euler_orientation.yaw)
-
-        # Calculate initial change in latitude and longitude (2 meters behind the leader)
-        delta_latitude = 2 / EARTH_RADIUS
-        delta_longitude = 2 / (EARTH_RADIUS * math.cos(leader_latitude_rad))
-
+        
         for i in range(self.n_followers):
-            # Calculate new latitude and longitude for each follower
-            new_latitude_rad = leader_latitude_rad - ((i+1) * delta_latitude)
-            new_longitude_rad = leader_longitude_rad - ((i+1) * delta_longitude)
-
-            # Convert new latitude and longitude from radians to degrees
-            new_latitude = math.degrees(new_latitude_rad)
-            new_longitude = math.degrees(new_longitude_rad)
-
-            # Add the coordinates to the list
-            follower_coordinates.append((new_latitude, new_longitude))
-
+            new_coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
+                                              longitude=self.data.global_position.longitude,
+                                              dNorth=-(2*(self.n_followers-(i+1)))+2,
+                                              dEast=0)
+            follower_coordinates.append(new_coords)
+            
         return follower_coordinates
                  
     def leader_GPS_Subscriber_callback(self, mssg):
