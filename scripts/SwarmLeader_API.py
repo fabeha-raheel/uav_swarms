@@ -73,21 +73,6 @@ class SwarmLeader(MAVROS_Drone):
             follower_coordinates.append(new_coords)
             
         return follower_coordinates
-                 
-    def leader_GPS_Subscriber_callback(self, mssg):
-        self.GPS_Fix = mssg.status.status
-
-        self.leader_data.global_position.latitude = mssg.latitude
-        self.leader_data.global_position.longitude = mssg.longitude
-        self.leader_data.global_position.altitude = mssg.altitude
-        
-    def leader_LocalPos_Subscriber_callback(self, mssg):
-        self.leader_data.local_position.x = mssg.pose.pose.position.x
-        self.leader_data.local_position.y = mssg.pose.pose.position.y
-        self.leader_data.local_position.z = mssg.pose.pose.position.z
-        
-    def leader_Heading_Subscriber_callback(self,mssg):
-        self.leader_data.euler_orientation.yaw = mssg.data
         
 # """
 # Functions to make it easy to convert between the different frames-of-reference. In particular these
