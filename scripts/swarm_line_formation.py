@@ -52,7 +52,7 @@ else:
     sys.exit(1)
     
 rospy.loginfo("Getting Follower Coordinates")
-follower_coordinates = leader.calculate_follower_coordinates()
+follower_coordinates = leader.calculate_line_formation_coordinates()
 
 rospy.loginfo("Arming Followers")
 for follower in leader.followers:

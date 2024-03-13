@@ -62,7 +62,7 @@ class SwarmLeader(MAVROS_Drone):
         else:
             return False
     
-    def calculate_follower_coordinates(self):
+    def calculate_line_formation_coordinates(self):
         follower_coordinates = []
         
         for i in range(self.n_followers):
