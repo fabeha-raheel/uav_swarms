@@ -6,8 +6,8 @@ import rospy
 from std_msgs.msg import Float64
 from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Odometry
-from mavros_msgs.msg import GlobalPositionTarget
-from mavros_msgs.srv import CommandBool, CommandTOL, SetMode
+from mavros_msgs.msg import GlobalPositionTarget, ParamValue
+from mavros_msgs.srv import CommandBool, CommandTOL, SetMode, ParamSet
 
 from Drone_Data import Drone_Data
 
@@ -151,6 +151,34 @@ class MAVROS_Drone():
         command.coordinate_frame=coordinate_frame
         
         self.global_setpoint_publisher.publish(command)
+    
+    def set_param(self, param_name, param_value):
+        if self.ns is None:
+            rospy.wait_for_service('/mavros/param/set', timeout=3)
+            try:
+                param_set = rospy.ServiceProxy('/mavros/param/set', ParamSet)
+                
+                value = ParamValue()
+                value.integer = 0
+                value.real = float(param_value)
+                response = param_set(param_name, value)
+                rospy.loginfo("{0} parameter set to {1}".format(param_name, param_value))
+            except rospy.ServiceException as e:
+                rospy.logerr("Service call failed: %s" % e)
+        
+        else:
+            rospy.wait_for_service(self.ns + '/mavros/param/set', timeout=3)
+            try:
+                param_set = rospy.ServiceProxy(self.ns + '/mavros/param/set', ParamSet)
+                value = ParamValue()
+                value.integer = 0
+                value.real = float(param_value)
+                response = param_set(param_name, value)
+                rospy.loginfo("{0} parameter set to {1}".format(param_name, param_value))
+            except rospy.ServiceException as e:
+                rospy.logerr("Service call failed: %s" % e)
+                
+        return response
     
     def check_takeoff_complete(self):
         if abs(self.takeoff_altitude - self.data.local_position.z) <= 0.2:
