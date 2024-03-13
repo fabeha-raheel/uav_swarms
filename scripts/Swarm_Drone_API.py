@@ -249,6 +249,16 @@ class MAVROS_Drone():
         target_location = (new_lat, new_lon)
         
         return target_location
+    
+    def drone_to_ned_conversion(self, dNorth, dEast, heading):
+        North = dNorth*math.cos(math.radians(heading)) - dEast*math.sin(math.radians(heading))
+        East = dNorth*math.sin(math.radians(heading)) - dEast*math.cos(math.radians(heading))
+        return (North, East)
+    
+    def ned_to_drone_conversion(self, dNorth, dEast, heading):
+        North = dNorth*math.cos(math.radians(heading)) + dEast*math.sin(math.radians(heading))
+        East = -1*dNorth*math.sin(math.radians(heading)) + dEast*math.cos(math.radians(heading))
+        return (North, East)
         
 # """
 # Functions to make it easy to convert between the different frames-of-reference. In particular these
