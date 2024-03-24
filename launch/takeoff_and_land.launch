@@ -2,6 +2,6 @@
 <launch>
 
         <!-- Swarm Takeoff and Land Node -->
-        <node name="Line_Formation" pkg="uav_swarms" type="swarm_takeoff_and_land.py" output="screen" />
+        <node name="Takeoff_and_Land" pkg="uav_swarms" type="swarm_takeoff_and_land.py" output="screen" />
 
 </launch>
