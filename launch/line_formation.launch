@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+
+        <!-- Swarm Line Formation Node -->
+        <node name="Line_Formation" pkg="uav_swarms" type="swarm_line_formation.py" output="screen" />
+
+</launch>
