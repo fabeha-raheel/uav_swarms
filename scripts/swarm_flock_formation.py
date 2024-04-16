@@ -7,6 +7,15 @@ from SwarmLeader_API import *
 
 leader = SwarmLeader(name='drone1', n_followers=2)
 
+
+rospy.loginfo("Setting Stream Rate")
+leader.set_stream_rate()
+time.sleep(0.5)
+
+for follower in leader.followers:
+    follower.set_stream_rate()
+time.sleep(0.5)
+
 rospy.loginfo("Setting Leader's Mode to GUIDED")
 leader_response = leader.set_mode(mode='GUIDED')
 

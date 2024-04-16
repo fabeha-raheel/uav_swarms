@@ -7,7 +7,7 @@ from std_msgs.msg import Float64
 from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Odometry
 from mavros_msgs.msg import GlobalPositionTarget, ParamValue
-from mavros_msgs.srv import CommandBool, CommandTOL, SetMode, ParamSet
+from mavros_msgs.srv import CommandBool, CommandTOL, SetMode, ParamSet, StreamRate
 
 from Drone_Data import Drone_Data
 
@@ -128,6 +128,22 @@ class MAVROS_Drone():
             self.takeoff_altitude = 0
             
         return takeoffResponse
+    
+    def set_stream_rate(self):
+        if self.ns is None:
+            rospy.wait_for_service('/mavros/set_stream_rate', timeout=3)
+            try:
+                streamService = rospy.ServiceProxy('/mavros/set_stream_rate', StreamRate)
+                streamService(stream_id=0, message_rate=10, on_off=True)
+            except rospy.ServiceException as e:
+                print("Setting Stream Rate failed: %s" %e)
+        else:
+            rospy.wait_for_service(self.ns + '/mavros/set_stream_rate', timeout=3)
+            try:
+                streamService = rospy.ServiceProxy(self.ns + '/mavros/set_stream_rate', StreamRate)
+                streamService(stream_id=0, message_rate=10, on_off=True)
+            except rospy.ServiceException as e:
+                print("Setting Stream Rate failed: %s" %e)
     
     def goto_location(self, latitude, longitude, altitude, type_mask=4088, coordinate_frame=6):
         
