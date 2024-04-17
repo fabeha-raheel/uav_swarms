@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 import math
 import rospy
@@ -144,7 +144,6 @@ class MAVROS_Drone():
                 streamService(stream_id=0, message_rate=10, on_off=True)
             except rospy.ServiceException as e:
                 print("Setting Stream Rate failed: %s" %e)
-
     
     def goto_location(self, latitude, longitude, altitude, type_mask=4088, coordinate_frame=6):
         
@@ -268,13 +267,26 @@ class MAVROS_Drone():
         return target_location
     
     def drone_to_ned_conversion(self, dNorth, dEast, heading):
-        North = dNorth*math.cos(math.radians(heading)) - dEast*math.sin(math.radians(heading))
-        East = dNorth*math.sin(math.radians(heading)) - dEast*math.cos(math.radians(heading))
+        if heading >= 270:
+            hdg = heading - 270
+            North = dNorth*math.sin(math.radians(hdg)) + dEast*math.cos(math.radians(hdg))
+            East = -1*dNorth*math.cos(math.radians(hdg)) + dEast*math.sin(math.radians(hdg))
+        elif heading <= 90:
+            North = dNorth*math.cos(math.radians(heading)) - dEast*math.sin(math.radians(heading))
+            East = dNorth*math.sin(math.radians(heading)) + dEast*math.cos(math.radians(heading))
+        elif heading<=180 and heading>90:
+            hdg = heading - 90
+            North = -1*dNorth*math.sin(math.radians(hdg)) - dEast*math.cos(math.radians(hdg))
+            East = dNorth*math.cos(math.radians(hdg)) - dEast*math.sin(math.radians(hdg))
+        else:
+            hdg = heading - 180
+            North = -1*dNorth*math.cos(math.radians(hdg)) + dEast*math.sin(math.radians(hdg))
+            East = -1*dNorth*math.sin(math.radians(hdg)) - dEast*math.cos(math.radians(hdg))
         return (North, East)
     
     def ned_to_drone_conversion(self, dNorth, dEast, heading):
-        North = dNorth*math.cos(math.radians(heading)) + dEast*math.sin(math.radians(heading))
-        East = -1*dNorth*math.sin(math.radians(heading)) + dEast*math.cos(math.radians(heading))
+        North = dNorth*math.cos(math.radians(heading)) - dEast*math.sin(math.radians(heading))
+        East = dNorth*math.sin(math.radians(heading)) + dEast*math.cos(math.radians(heading))
         return (North, East)
         
 # """
