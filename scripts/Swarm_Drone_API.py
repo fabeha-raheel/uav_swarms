@@ -197,7 +197,7 @@ class MAVROS_Drone():
         return response
     
     def check_takeoff_complete(self):
-        if abs(self.takeoff_altitude - self.data.local_position.z) <= 0.2:
+        if abs(self.takeoff_altitude - self.data.local_position.z) <= 0.5:
             return True
         else:
             return False

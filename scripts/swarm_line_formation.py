@@ -5,7 +5,7 @@ import sys
 
 from SwarmLeader_API import *
 
-leader = SwarmLeader(name='drone1', n_followers=1)
+leader = SwarmLeader(name='drone1', n_followers=2)
 
 rospy.loginfo("Setting Stream Rate")
 leader.set_stream_rate()
@@ -51,17 +51,11 @@ target_altitude = (2*leader.n_followers)+2          # 2m spacing between each dr
 leader_response = leader.takeoff(altitude=target_altitude)
 
 if leader_response.success:
-    rospy.loginfo("Leader is Taking off.")
-    while not leader.check_takeoff_complete():
-        # Waiting for leader to complete takeoff
-        time.sleep(0.1)
+    rospy.loginfo("Leader is Taking off.")  
 else:
     rospy.logerr("Leader failed to takeoff. Aborting Mission...")
     sys.exit(1)
     
-rospy.loginfo("Getting Follower Coordinates")
-follower_coordinates = leader.calculate_line_formation_coordinates()
-
 rospy.loginfo("Arming Followers")
 for follower in leader.followers:
     follower_response = follower.arm()
@@ -74,7 +68,7 @@ for follower in leader.followers:
         # rospy.loginfo("Removing {follower.data.header.name} from list of active followers.")
         # leader.followers.remove(follower)
         # leader.n_followers = leader.n_followers - 1
-
+        
 # Followers Take-off
 for follower in leader.followers:
     follower_index = leader.followers.index(follower)
@@ -82,15 +76,24 @@ for follower in leader.followers:
     
     if follower_response.success:
         rospy.loginfo("{} is Taking off.".format(follower.data.header.name))
-        while not follower.check_takeoff_complete():
-            # Waiting for follower to complete takeoff
-            time.sleep(0.1)
     else:
         rospy.loginfo("{} failed to takeoff.".format(follower.data.header.name))
     
         # rospy.loginfo("Removing {follower.data.header.name} from list of active followers.")
         # leader.followers.remove(follower)
         # leader.n_followers = leader.n_followers - 1
+    
+while not leader.check_takeoff_complete():
+    # Waiting for leader to complete takeoff
+    time.sleep(0.1)
+
+for follower in leader.followers:    
+    while not follower.check_takeoff_complete():
+        # Waiting for follower to complete takeoff
+        time.sleep(0.1)
+    
+rospy.loginfo("Getting Follower Coordinates")
+follower_coordinates = leader.calculate_line_formation_coordinates(offset=2)
         
 heading = leader.data.euler_orientation.yaw
         
@@ -100,10 +103,13 @@ for follower in leader.followers:
     rospy.loginfo("Setting RTL_ALT param of {}.".format(follower.data.header.name))
     follower.set_param(param_name="RTL_ALT", param_value=(2*(leader.n_followers-(follower_index+1)))+2)
     # follower.goto_location(latitude=follower_coordinates[follower_index][0], longitude=follower_coordinates[follower_index][1], altitude=(2*(leader.n_followers-(follower_index+1)))+2)
-    follower.goto_location_heading(latitude=follower_coordinates[follower_index][0], 
+    # follower.goto_location_heading(latitude=follower_coordinates[follower_index][0], 
+    #                                longitude=follower_coordinates[follower_index][1], 
+    #                                altitude=(2*(leader.n_followers-(follower_index+1)))+2,
+    #                                yaw=heading)
+    follower.goto_location(latitude=follower_coordinates[follower_index][0], 
                                    longitude=follower_coordinates[follower_index][1], 
-                                   altitude=(2*(leader.n_followers-(follower_index+1)))+2,
-                                   yaw=heading)
+                                   altitude=(2*(leader.n_followers-(follower_index+1)))+2)
     time.sleep(2)
     
 # Hover for few seconds
