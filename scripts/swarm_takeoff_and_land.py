@@ -5,7 +5,7 @@ import sys
 
 from SwarmLeader_API import *
 
-leader = SwarmLeader(name='drone1', n_followers=1)
+leader = SwarmLeader(name='drone1', n_followers=2)
 
 rospy.loginfo("Setting Stream Rate")
 leader.set_stream_rate()
