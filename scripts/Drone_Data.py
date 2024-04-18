@@ -24,7 +24,8 @@ class LocalPosition:
         self.z = z
 
 class GlobalPosition:
-    def __init__(self, latitude=0, longitude=0, altitude=0):
+    def __init__(self, fix=-1, latitude=0, longitude=0, altitude=0):
+        self.gps_fix = fix
         self.latitude = latitude
         self.longitude = longitude
         self.altitude = altitude
