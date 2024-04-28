@@ -6,6 +6,7 @@ import sys
 from SwarmLeader_API import *
 
 takeoff_spacing = 3
+formation_offset = 3
 
 leader = SwarmLeader(name='drone1', n_followers=2)
 
@@ -98,11 +99,11 @@ for follower in leader.followers:
 for follower in leader.followers:
         follower_index = leader.followers.index(follower)
         rospy.loginfo("Setting RTL_ALT param of {}.".format(follower.data.header.name))
-        follower.set_param(param_name="RTL_ALT", param_value=(2*(leader.n_followers-(follower_index+1)))+2)
+        follower.set_param(param_name="RTL_ALT", param_value=(takeoff_spacing*(leader.n_followers-(follower_index+1)))+takeoff_spacing)
         
 while not rospy.is_shutdown():        
     rospy.loginfo("Getting Follower Coordinates")
-    follower_coordinates = leader.calculate_flock_formation_coordinates()
+    follower_coordinates = leader.calculate_flock_formation_coordinates(offset=formation_offset)
     heading = leader.data.euler_orientation.yaw
             
     # Flock Formation
@@ -114,7 +115,7 @@ while not rospy.is_shutdown():
         #                             yaw=heading)
         follower.goto_location(latitude=follower_coordinates[follower_index][0], 
                                     longitude=follower_coordinates[follower_index][1], 
-                                    altitude=(2*(leader.n_followers-(follower_index+1)))+2)
+                                    altitude=(takeoff_spacing*(leader.n_followers-(follower_index+1)))+takeoff_spacing)
     if leader.data.header.mode == "LAND":
         rospy.loginfo("Landing followers...")
         for follower in leader.followers:

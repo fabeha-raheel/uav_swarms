@@ -5,6 +5,9 @@ import sys
 
 from SwarmLeader_API import *
 
+takeoff_spacing = 3
+formation_offset = 3
+
 leader = SwarmLeader(name='drone1', n_followers=2)
 
 rospy.loginfo("Setting Stream Rate")
@@ -47,7 +50,7 @@ else:
     sys.exit(1)
     
 # Leader Take-off
-target_altitude = (2*leader.n_followers)+2          # 2m spacing between each drone
+target_altitude = (takeoff_spacing*leader.n_followers)+takeoff_spacing          # 2m spacing between each drone
 leader_response = leader.takeoff(altitude=target_altitude)
 
 if leader_response.success:
@@ -72,7 +75,7 @@ for follower in leader.followers:
 # Followers Take-off
 for follower in leader.followers:
     follower_index = leader.followers.index(follower)
-    follower_response = follower.takeoff(altitude=(2*(leader.n_followers-(follower_index+1)))+2)
+    follower_response = follower.takeoff(altitude=(takeoff_spacing*(leader.n_followers-(follower_index+1)))+takeoff_spacing)
     
     if follower_response.success:
         rospy.loginfo("{} is Taking off.".format(follower.data.header.name))
@@ -93,7 +96,7 @@ for follower in leader.followers:
         time.sleep(0.1)
     
 rospy.loginfo("Getting Follower Coordinates")
-follower_coordinates = leader.calculate_line_formation_coordinates(offset=2)
+follower_coordinates = leader.calculate_line_formation_coordinates(offset=formation_offset)
         
 heading = leader.data.euler_orientation.yaw
         
@@ -101,15 +104,14 @@ heading = leader.data.euler_orientation.yaw
 for follower in leader.followers:
     follower_index = leader.followers.index(follower)
     rospy.loginfo("Setting RTL_ALT param of {}.".format(follower.data.header.name))
-    follower.set_param(param_name="RTL_ALT", param_value=(2*(leader.n_followers-(follower_index+1)))+2)
-    # follower.goto_location(latitude=follower_coordinates[follower_index][0], longitude=follower_coordinates[follower_index][1], altitude=(2*(leader.n_followers-(follower_index+1)))+2)
+    follower.set_param(param_name="RTL_ALT", param_value=(takeoff_spacing*(leader.n_followers-(follower_index+1)))+takeoff_spacing)
     # follower.goto_location_heading(latitude=follower_coordinates[follower_index][0], 
     #                                longitude=follower_coordinates[follower_index][1], 
     #                                altitude=(2*(leader.n_followers-(follower_index+1)))+2,
     #                                yaw=heading)
     follower.goto_location(latitude=follower_coordinates[follower_index][0], 
                                    longitude=follower_coordinates[follower_index][1], 
-                                   altitude=(2*(leader.n_followers-(follower_index+1)))+2)
+                                   altitude=(takeoff_spacing*(leader.n_followers-(follower_index+1)))+takeoff_spacing)
     time.sleep(2)
     
 # Hover for few seconds
