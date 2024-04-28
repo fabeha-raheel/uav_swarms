@@ -6,7 +6,7 @@ import rospy
 from std_msgs.msg import Float64
 from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Odometry
-from mavros_msgs.msg import GlobalPositionTarget, ParamValue
+from mavros_msgs.msg import GlobalPositionTarget, ParamValue, State
 from mavros_msgs.srv import CommandBool, CommandTOL, SetMode, ParamSet, StreamRate
 
 from Drone_Data import Drone_Data
@@ -25,11 +25,13 @@ class MAVROS_Drone():
         if self.ns is not None:
             self.global_position_subscriber = rospy.Subscriber(self.ns + '/mavros/global_position/global',NavSatFix, self.global_sub_cb)
             self.local_position_subscriber = rospy.Subscriber(self.ns + '/mavros/global_position/local',Odometry, self.local_sub_cb)
-            self.compass_hdg_subscriber = rospy.Subscriber(self.ns + '/mavros/global_position/compass_hdg',Float64, self.hdg_sub_cb)        
+            self.compass_hdg_subscriber = rospy.Subscriber(self.ns + '/mavros/global_position/compass_hdg',Float64, self.hdg_sub_cb)    
+            self.state_subscriber = rospy.Subscriber(self.ns + '/mavros/state',State, self.state_sub_cb)        
         else:
             self.global_position_subscriber = rospy.Subscriber('/mavros/global_position/global',NavSatFix, self.global_sub_cb)
             self.local_position_subscriber = rospy.Subscriber('/mavros/global_position/local',Odometry, self.local_sub_cb)
             self.compass_hdg_subscriber = rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.hdg_sub_cb)
+            self.state_subscriber = rospy.Subscriber('/mavros/state',State, self.state_sub_cb) 
             
     def init_publishers(self):
         if self.ns is not None:
@@ -224,6 +226,9 @@ class MAVROS_Drone():
         
     def hdg_sub_cb(self,mssg):
         self.data.euler_orientation.yaw = mssg.data
+        
+    def state_sub_cb(self, mssg):
+        self.data.header.mode = mssg.mode
         
     def offset_location(self, latitude, longitude, dNorth, dEast):
         earth_radius = 6378137.0 #Radius of "spherical" earth

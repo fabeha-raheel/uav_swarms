@@ -83,8 +83,8 @@ class SwarmLeader(MAVROS_Drone):
         
         if self.n_followers%2 == 0:    # if number of followers is even
             for i in range(int(self.n_followers / 2)):
-                dN = -1*offset*(i+1)
-                dE = offset*(i+1)
+                dN = -0.866*offset*(i+1)
+                dE = (offset*(i+1))/2
                 converted_offsets = self.drone_to_ned_conversion(dNorth=dN, dEast=dE, heading=self.data.euler_orientation.yaw)
                 
                 coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
@@ -93,7 +93,7 @@ class SwarmLeader(MAVROS_Drone):
                                                         dEast=converted_offsets[1])
                 follower_coordinates.append(coords)
                 
-                dE = -1*offset*(i+1)
+                dE = (-1*offset*(i+1))/2
                 converted_offsets = self.drone_to_ned_conversion(dNorth=dN, dEast=dE, heading=self.data.euler_orientation.yaw)
                 
                 coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
@@ -113,8 +113,8 @@ class SwarmLeader(MAVROS_Drone):
             follower_coordinates.append(coords)
             
             for i in range(int((self.n_followers - 1) / 2)):
-                dN = -1*offset*(i+2)
-                dE = offset*(i+1)
+                dN = (-0.866*offset*(i+1))-offset
+                dE = (offset*(i+1))/2
                 converted_offsets = self.drone_to_ned_conversion(dNorth=dN, dEast=dE, heading=self.data.euler_orientation.yaw)
                 coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
                                                         longitude=self.data.global_position.longitude,
@@ -122,7 +122,7 @@ class SwarmLeader(MAVROS_Drone):
                                                         dEast=converted_offsets[1])
                 follower_coordinates.append(coords)
                 
-                dE = offset*(i+1)
+                dE = (-1*offset*(i+1))/2
                 converted_offsets = self.drone_to_ned_conversion(dNorth=dN, dEast=dE, heading=self.data.euler_orientation.yaw)
                 coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
                                                         longitude=self.data.global_position.longitude,
