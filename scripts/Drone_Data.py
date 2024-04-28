@@ -16,6 +16,7 @@ class Header:
     def __init__(self) -> None:
         self.name = 'no-name'
         self.id = 1
+        self.mode = 'GUIDED'
 
 class LocalPosition:
     def __init__(self, x=0, y=0, z=0):
