@@ -115,17 +115,18 @@ while not rospy.is_shutdown():
         follower.goto_location(latitude=follower_coordinates[follower_index][0], 
                                     longitude=follower_coordinates[follower_index][1], 
                                     altitude=(2*(leader.n_followers-(follower_index+1)))+2)
-        time.sleep(1)
-
-# Land all drones
-rospy.loginfo("Landing followers...")
-for follower in leader.followers:
-    follower_response = follower.set_mode(mode='LAND')
-    # follower_response = follower.set_mode(mode='RTL')
-    
-rospy.loginfo("Landing Leader...")
-leader.set_mode(mode="LAND")
-    
+    if leader.data.header.mode == "LAND":
+        rospy.loginfo("Landing followers...")
+        for follower in leader.followers:
+            follower_response = follower.set_mode(mode='LAND')
+        break
+    elif leader.data.header.mode == "RTL":
+        rospy.loginfo("Return to Home...")
+        for follower in leader.followers:
+            follower_response = follower.set_mode(mode='RTL')
+        break
+    time.sleep(0.5)
+       
 for follower in leader.followers:
     while not follower.check_land_complete():
         # print("...")
