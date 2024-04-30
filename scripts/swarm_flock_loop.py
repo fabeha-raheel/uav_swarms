@@ -126,7 +126,6 @@ while not rospy.is_shutdown():
         for follower in leader.followers:
             follower_response = follower.set_mode(mode='RTL')
         break
-    time.sleep(0.5)
        
 for follower in leader.followers:
     while not follower.check_land_complete():
