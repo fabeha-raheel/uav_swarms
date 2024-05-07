@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+
+        <!-- Swarm Flock Formation Node -->
+        <node name="Formation_control" pkg="uav_swarms" type="swarm_formation_control_final.py" output="screen" />
+
+</launch>

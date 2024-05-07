@@ -50,8 +50,8 @@ else:
     sys.exit(1)
     
 # Leader Take-off
-target_altitude = (takeoff_spacing*leader.n_followers)+takeoff_spacing         # 2m spacing between each drone
-leader_response = leader.takeoff(altitude=target_altitude)
+leader_min_altitude = (takeoff_spacing*leader.n_followers)+takeoff_spacing       
+leader_response = leader.takeoff(altitude=leader_min_altitude)
 
 if leader_response.success:
     rospy.loginfo("Leader is Taking off.")
@@ -105,17 +105,29 @@ while not rospy.is_shutdown():
     rospy.loginfo("Getting Follower Coordinates")
     follower_coordinates = leader.calculate_flock_formation_coordinates(offset=formation_offset)
     heading = leader.data.euler_orientation.yaw
+
+    if leader.data.global_position.altitude >= leader_min_altitude:  
+        for follower in leader.followers:
+            follower_index = leader.followers.index(follower)
+            # follower.goto_location_heading(latitude=follower_coordinates[follower_index][0], 
+            #                             longitude=follower_coordinates[follower_index][1], 
+            #                             altitude=(2*(leader.n_followers-(follower_index+1)))+2,
+            #                             yaw=heading)
+            follower.goto_location(latitude=follower_coordinates[follower_index][0], 
+                                        longitude=follower_coordinates[follower_index][1], 
+                                        altitude=leader.data.global_position.altitude - (takeoff_spacing*(follower_index+1)))
             
-    # Flock Formation
-    for follower in leader.followers:
-        follower_index = leader.followers.index(follower)
-        # follower.goto_location_heading(latitude=follower_coordinates[follower_index][0], 
-        #                             longitude=follower_coordinates[follower_index][1], 
-        #                             altitude=(2*(leader.n_followers-(follower_index+1)))+2,
-        #                             yaw=heading)
-        follower.goto_location(latitude=follower_coordinates[follower_index][0], 
-                                    longitude=follower_coordinates[follower_index][1], 
-                                    altitude=(takeoff_spacing*(leader.n_followers-(follower_index+1)))+takeoff_spacing)
+    else:
+        for follower in leader.followers:
+            follower_index = leader.followers.index(follower)
+            # follower.goto_location_heading(latitude=follower_coordinates[follower_index][0], 
+            #                             longitude=follower_coordinates[follower_index][1], 
+            #                             altitude=(2*(leader.n_followers-(follower_index+1)))+2,
+            #                             yaw=heading)
+            follower.goto_location(latitude=follower_coordinates[follower_index][0], 
+                                        longitude=follower_coordinates[follower_index][1], 
+                                        altitude=(takeoff_spacing*(leader.n_followers-(follower_index+1)))+takeoff_spacing)
+            
     if leader.data.header.mode == "LAND":
         rospy.loginfo("Landing followers...")
         for follower in leader.followers:

@@ -25,12 +25,14 @@ class MAVROS_Drone():
         if self.ns is not None:
             self.global_position_subscriber = rospy.Subscriber(self.ns + '/mavros/global_position/global',NavSatFix, self.global_sub_cb)
             self.local_position_subscriber = rospy.Subscriber(self.ns + '/mavros/global_position/local',Odometry, self.local_sub_cb)
-            self.compass_hdg_subscriber = rospy.Subscriber(self.ns + '/mavros/global_position/compass_hdg',Float64, self.hdg_sub_cb)    
+            self.compass_hdg_subscriber = rospy.Subscriber(self.ns + '/mavros/global_position/compass_hdg',Float64, self.hdg_sub_cb)
+            self.rel_alt_subscriber = rospy.Subscriber(self.ns + '/mavros/global_position/rel_alt',Float64, self.rel_alt_sub_cb)    
             self.state_subscriber = rospy.Subscriber(self.ns + '/mavros/state',State, self.state_sub_cb)        
         else:
             self.global_position_subscriber = rospy.Subscriber('/mavros/global_position/global',NavSatFix, self.global_sub_cb)
             self.local_position_subscriber = rospy.Subscriber('/mavros/global_position/local',Odometry, self.local_sub_cb)
             self.compass_hdg_subscriber = rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.hdg_sub_cb)
+            self.rel_alt_subscriber = rospy.Subscriber('/mavros/global_position/rel_alt',Float64, self.rel_alt_sub_cb) 
             self.state_subscriber = rospy.Subscriber('/mavros/state',State, self.state_sub_cb) 
             
     def init_publishers(self):
@@ -217,7 +219,6 @@ class MAVROS_Drone():
         self.data.global_position.gps_fix = mssg.status.status
         self.data.global_position.latitude = mssg.latitude
         self.data.global_position.longitude = mssg.longitude
-        self.data.global_position.altitude = mssg.altitude
         
     def local_sub_cb(self, mssg):
         self.data.local_position.x = mssg.pose.pose.position.x
@@ -226,6 +227,9 @@ class MAVROS_Drone():
         
     def hdg_sub_cb(self,mssg):
         self.data.euler_orientation.yaw = mssg.data
+
+    def rel_alt_sub_cb(self, mssg):
+        self.data.global_position.altitude = mssg.data
         
     def state_sub_cb(self, mssg):
         self.data.header.mode = mssg.mode
