@@ -18,14 +18,9 @@ for follower in leader.followers:
     follower.set_stream_rate()
 time.sleep(0.5)
 
-rospy.loginfo("Setting Leader's Mode to GUIDED")
-leader_response = leader.set_mode(mode='GUIDED')
-
-if leader_response.mode_sent:
-    rospy.loginfo("Leader's Mode is now GUIDED.")
-else:
-    rospy.logerr("Leader's Mode cannot be switched to GUIDED. Aborting Mission...")
-    sys.exit(1)
+rospy.loginfo("Waiting for Leader to switch to Guided Mode")
+leader.wait_for_guided()
+rospy.loginfo("Leader's Mode is now GUIDED.")
 
 rospy.loginfo("Setting Followers Mode to GUIDED")
 for follower in leader.followers:

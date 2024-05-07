@@ -2,6 +2,7 @@
 
 import math
 import rospy
+import time
 
 from std_msgs.msg import Float64
 from sensor_msgs.msg import NavSatFix
@@ -148,6 +149,10 @@ class MAVROS_Drone():
                 streamService(stream_id=0, message_rate=10, on_off=True)
             except rospy.ServiceException as e:
                 print("Setting Stream Rate failed: %s" %e)
+
+    def wait_for_guided(self):
+        while self.data.header.mode != 'GUIDED':
+            time.sleep(0.5)
     
     def goto_location(self, latitude, longitude, altitude, type_mask=4088, coordinate_frame=6):
         
