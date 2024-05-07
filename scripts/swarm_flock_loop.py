@@ -9,6 +9,8 @@ takeoff_spacing = 3
 formation_offset = 3
 
 leader = SwarmLeader(name='drone1', n_followers=2)
+leader.initialize_followers()
+leader.wait_for_GPS_Fix()
 
 rospy.loginfo("Setting Stream Rate")
 leader.set_stream_rate()

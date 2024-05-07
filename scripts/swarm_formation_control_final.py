@@ -22,6 +22,10 @@ rospy.loginfo("Waiting for Leader to switch to Guided Mode")
 leader.wait_for_guided()
 rospy.loginfo("Leader's Mode is now GUIDED.")
 
+rospy.loginfo("Registering Followers")
+leader.initialize_followers()
+leader.wait_for_GPS_Fix()       # check if all leader and followers have GPS Fix
+
 rospy.loginfo("Setting Followers Mode to GUIDED")
 for follower in leader.followers:
     follower_response = follower.set_mode(mode='GUIDED')

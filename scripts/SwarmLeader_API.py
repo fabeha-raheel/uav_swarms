@@ -18,26 +18,24 @@ class SwarmLeader(MAVROS_Drone):
         self.n_followers = n_followers
         self.followers = []
         
-        # Create SwarmFollower instances and store them in self.followers list
-        for i in range(n_followers):
-            this_follower = SwarmFollower()
-            this_follower.data.header.name = 'drone'+str(i+2)
-            this_follower.ns = 'drone'+str(i+2)
-            this_follower.data.header.id = i+2
-            self.followers.append(this_follower)
-        
         rospy.init_node('Swarm_Leader')
         
         self.initialize()
-        
-        # Wait for GPS Fix
-        self.wait_for_GPS_Fix()  
         
     def initialize(self):
         # Initialize leader's ROS subscribers and publishers
         self.init_subscribers()
         self.init_publishers()
-        
+
+    def initialize_followers(self):
+        # Create SwarmFollower instances and store them in self.followers list
+        for i in range(self.n_followers):
+            this_follower = SwarmFollower()
+            this_follower.data.header.name = 'drone'+str(i+2)
+            this_follower.ns = 'drone'+str(i+2)
+            this_follower.data.header.id = i+2
+            self.followers.append(this_follower)
+
         # Initialize follower's ROS subscribers and publishers
         for i in range(self.n_followers):
             self.followers[i].init_subscribers()
