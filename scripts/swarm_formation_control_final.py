@@ -5,8 +5,16 @@ import sys
 
 from SwarmLeader_API import *
 
+# RC Channel for selecting formation type:
+formation_rc_channel = 9
+# Min and Max ranges for RC for different formations - min value is inclusive and max value is exclusive
+formation_rc_line_MinMax = [900, 1200]
+formation_rc_flock_MinMax = [1250, 1650]
+formation_rc_helical_MinMax = [1700, 2000]
+
 takeoff_spacing = 3
 formation_offset = 3
+helical_offset = 5
 
 leader = SwarmLeader(name='drone1', n_followers=2)
 
@@ -91,10 +99,17 @@ for follower in leader.followers:
         follower_index = leader.followers.index(follower)
         rospy.loginfo("Setting RTL_ALT param of {}.".format(follower.data.header.name))
         follower.set_param(param_name="RTL_ALT", param_value=(takeoff_spacing*(leader.n_followers-(follower_index+1)))+takeoff_spacing)
-        
-while not rospy.is_shutdown():        
-    rospy.loginfo("Getting Follower Coordinates")
-    follower_coordinates = leader.calculate_flock_formation_coordinates(offset=formation_offset)
+
+rospy.loginfo("Ready to execute Swarm Mission!")
+
+while not rospy.is_shutdown(): 
+    if leader.data.rc[formation_rc_channel-1] >= formation_rc_flock_MinMax[0] and leader.data.rc[formation_rc_channel-1] < formation_rc_flock_MinMax[1]:       
+        follower_coordinates = leader.calculate_flock_formation_coordinates(offset=formation_offset)
+    elif leader.data.rc[formation_rc_channel-1] >= formation_rc_helical_MinMax[0] and leader.data.rc[formation_rc_channel-1] < formation_rc_helical_MinMax[1]:
+        follower_coordinates = leader.calculate_helical_formation_coordinates(offset=helical_offset)
+    else:
+        follower_coordinates = leader.calculate_line_formation_coordinates(offset=formation_offset)
+
     heading = leader.data.euler_orientation.yaw
 
     if leader.data.global_position.altitude >= leader_min_altitude:  

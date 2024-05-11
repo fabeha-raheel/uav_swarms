@@ -42,10 +42,12 @@ class SwarmLeader(MAVROS_Drone):
     def wait_for_GPS_Fix(self):
         while True:
             if self.data.global_position.gps_fix == 0:
-                print("Leader is ready!")
-                if self.check_followers_GPS_Fix():
-                    print("All followers are ready!")
-                    break
+                print("Leader GPS Fix acquired!")
+                break
+        while True:
+            if self.check_followers_GPS_Fix():
+                print("All Followers have acquired GPS Fix!")
+                break
         
     def check_followers_GPS_Fix(self):
         followers_ready = 0    
@@ -126,4 +128,25 @@ class SwarmLeader(MAVROS_Drone):
                                                         dEast=converted_offsets[1])
                 follower_coordinates.append(coords)
         
+        return follower_coordinates
+    
+    def calculate_helical_formation_coordinates(self, offset=5):
+        follower_coordinates = []
+        angle_increment = 2 * math.pi / 3
+        current_angle = 0
+        
+        for i in range(self.n_followers):
+            dN = offset * math.cos(current_angle)
+            dE = offset * math.sin(current_angle)
+            
+            converted_offsets = self.drone_to_ned_conversion(dNorth=dN, dEast=dE, heading=self.data.euler_orientation.yaw)
+            
+            new_coords = self.ellipsoid_offset_location(latitude=self.data.global_position.latitude,
+                                                        longitude=self.data.global_position.longitude,
+                                                        dNorth=converted_offsets[0],
+                                                        dEast=converted_offsets[1])
+            follower_coordinates.append(new_coords)
+            
+            current_angle += angle_increment
+            
         return follower_coordinates
