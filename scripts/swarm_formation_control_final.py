@@ -10,14 +10,6 @@ formation_offset = 3
 
 leader = SwarmLeader(name='drone1', n_followers=2)
 
-rospy.loginfo("Setting Stream Rate")
-leader.set_stream_rate()
-time.sleep(0.5)
-
-for follower in leader.followers:
-    follower.set_stream_rate()
-time.sleep(0.5)
-
 rospy.loginfo("Waiting for Leader to switch to Guided Mode")
 leader.wait_for_guided()
 rospy.loginfo("Leader's Mode is now GUIDED.")
