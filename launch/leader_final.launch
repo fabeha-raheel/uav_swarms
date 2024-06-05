@@ -9,6 +9,6 @@
         </include>
 
         <!-- Formation Control Node -->
-        <node name="Formation_control" pkg="uav_swarms" type="swarm_formation_control_final.py" output="screen" />
+        <node name="Formation_control" pkg="uav_swarms" type="swarm_formation_control_final.py" output="screen" respawn="true" />
 
 </launch>
