@@ -58,103 +58,101 @@ Install Clover Raspberry Pi Image for all the drones.
     export ROS_MASTER_URI=http://192.168.11.2:11311
     export ROS_IP=192.168.11.2
     ```
+4.  Configure RPi to initialize the system files automatically on startup.
+    Go to ```rc.local``` file:
+    ```bash
+    sudo nano /etc/rc.local
+    ```
+    Update the ```rc.local``` file:
+    ```
+    #!/bin/bash -e
+    #
+    # rc.local
+    #
+    # This script is executed at the end of each multiuser runlevel.
+    # Make sure that the script will "exit 0" on success or any other
+    # value on error.
+    #
+    # In order to enable or disable this script just change the execution
+    # bits.
+    #
+    # By default this script does nothing.
 
+    # Print the IP address
+    _IP=$(hostname -I) || true
+    if [ "$_IP" ]; then
+    printf "My IP address is %s\n" "$_IP"
+    fi
 
-############
-Go to rc.local
-sudo nano /etc/rc.local
+    source /home/pi/catkin_ws/devel/setup.bash
+    export ROS_MASTER_URI=http://192.168.11.2:11311
+    export ROS_IP=192.168.11.2
 
-update rc.local:
-#!/bin/bash -e
-#
-# rc.local
-#
-# This script is executed at the end of each multiuser runlevel.
-# Make sure that the script will "exit 0" on success or any other
-# value on error.
-#
-# In order to enable or disable this script just change the execution
-# bits.
-#
-# By default this script does nothing.
+    su - pi -c " source /opt/ros/noetic/setup.bash; source /home/pi/catkin_ws/devel/setup.bash; export ROS_MASTER_URI=http://192.168.11.2:11311; export ROS_IP=192.168.11.2; /opt/ros/noetic/bin/roslaunch uav_swarms formation_control_final.launch"
 
-# Print the IP address
-_IP=$(hostname -I) || true
-if [ "$_IP" ]; then
-  printf "My IP address is %s\n" "$_IP"
-fi
+    exit 0
+    ```
+    Access the ```clover.service``` file:
+    ```bash
+    cd /etc/systemd/system/
+    sudo nano clover.service
+    ```
+    Update the ```clover.service``` file as follows:
+    ```
+    [Unit]
+    Description=Clover ROS package
+    Requires=roscore.service
 
-source /home/pi/catkin_ws/devel/setup.bash
-export ROS_MASTER_URI=http://192.168.11.2:11311
-export ROS_IP=192.168.11.2
+    [Service]
+    User=pi
+    ExecStart=/bin/bash -c ". /home/pi/catkin_ws/devel/setup.sh; \
+                        ROS_HOSTNAME=`hostname`.local exec stdbuf -o L roslaunch uav_swarms leader.launch --wait --screen --skip-log-check \
+                        2> >(tee /tmp/clover.err)"
 
-su - pi -c " source /opt/ros/noetic/setup.bash; source /home/pi/catkin_ws/devel/setup.bash; export ROS_MASTER_URI=http://192.168.11.2:11311; export ROS_IP=192.168.11.2; /opt/ros/noetic/bin/roslaunch uav_swarms formation_control_final.launch"
+    ExecStartPre=+rm /var/log/clover.log
+    StandardOutput=file:/var/log/clover.log
+    StandardError=file:/var/log/clover.log
 
-exit 0
-#################
+    [Install]
+    WantedBy=multi-user.target
+    ```
+    **Note:** Make sure to update MAV_SYSID parameter of each drone to 1 using Mission Planner / QGC.
 
-##############
-update clover.service:
-cd /etc/systemd/system/
-sudo nano clover.service
+## Modifications in Followers's RPi
 
-[Unit]
-Description=Clover ROS package
-Requires=roscore.service
+1.  SSH into the follower's RPi
+    ```bash
+    ssh pi@clover2
 
-[Service]
-User=pi
-ExecStart=/bin/bash -c ". /home/pi/catkin_ws/devel/setup.sh; \
-                      ROS_HOSTNAME=`hostname`.local exec stdbuf -o L roslaunch uav_swarms leader.launch --wait --screen --skip-log-check \
-                      2> >(tee /tmp/clover.err)"
+    password: 22
+    ```
 
-ExecStartPre=+rm /var/log/clover.log
-StandardOutput=file:/var/log/clover.log
-StandardError=file:/var/log/clover.log
+2.  Configure the follower as client.
 
-[Install]
-WantedBy=multi-user.target
-#####################
+    Go to ```wpa_suupplicant.conf``` using the following command:
+    ```bash
+    sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
+    ```
+    Update ```wpa_supplicant.conf``` file:
+    ```
+    ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+    update_config=1
+    country=GB
+    network={
+        ssid="clover1"
+        psk="cloverwifi"
+    }
+    ```
+    Go to ```dhcpcd.conf``` file:
+    ```bash
+    sudo nano /etc/dhcpcd.conf
+    ```
+    Add the following lines at the end of ```dhcpcd.conf``` file:
+    ```
+    interface wlan0
+    static ip_address=192.168.11.3/24
+    ```
 
-make sure to update mav_sysid parameter of each drone to 1 using mission_planner/QGC
-################
-
-####################################
-Now update follower parameters:
-
-Changes in follower's setup:
-###########
-ssh to follower
-ssh pi@clover2
-password: 22
-###########
-
-#########
-configure follower as client:
-
-Go to wpa_suupplicant.conf:
-sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
-
-update wpa_supplicant.conf:
-
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
-country=GB
-network={
-    ssid="clover1"
-    psk="cloverwifi"
-}
-
-##########
-
-##########
-Go to dhcpcd.conf
-sudo nano /etc/dhcpcd.conf
-
-add these two lines in the end:
-interface wlan0
-static ip_address=192.168.11.3/24
-###############
 
 ##################
 update .bashrc
