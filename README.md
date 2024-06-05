@@ -2,6 +2,18 @@
 
 Install Clover Raspberry Pi Image for all the drones.
 
+Clone the ```uav_swarms``` package in the Raspberry Pis:
+```bash
+cd ~/catkin_ws/src
+git clone https://github.com/fabeha-raheel/uav_swarms.git
+```
+
+Build the package:
+```bash
+cd ~/catkin_ws
+catkin_make
+```
+
 ## Modifications in Leader's RPi
 
 1.  SSH into the leader's RPi
