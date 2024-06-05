@@ -2,7 +2,7 @@
 
 Install Clover Raspberry Pi Image for all the drones.
 
-# Modifications in Leader's RPi
+## Modifications in Leader's RPi
 
 1.  SSH into the leader's RPi
     ```bash
@@ -12,51 +12,53 @@ Install Clover Raspberry Pi Image for all the drones.
     ```
 2.  Configure the leader as an access point.
 
-    Go to wpa_suupplicant.conf:
+    Go to ```wpa_suupplicant.conf``` using the following command:
     ```bash
-
+    sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
     ```
-sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
+    Update ```wpa_supplicant.conf``` file:
+    ```
+    ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+    update_config=1
+    country=GB
+    network={
+        ssid="clover1"
+        psk="cloverwifi"
+        mode=2
+        proto=RSN
+        key_mgmt=WPA-PSK
+        pairwise=CCMP
+        auth_alg=OPEN
+    }
+    ```
+    Go to ```dhcpcd.conf``` file:
+    ```bash
+    sudo nano /etc/dhcpcd.conf
+    ```
+    Add the following lines at the end of ```dhcpcd.conf``` file:
+    ```
+    interface wlan0
+    static ip_address=192.168.11.2/24
+    ```
+3.  Configure the ROS Network.
+    
+    Update ```.bashrc``` file:
+    ```bash
+    sudo nano .bashrc
+    ```
+    Comment the following lines:
+    ```
+    #export ROS_HOSTNAME=`hostname`.local
+    #export ROS_HOSTNAME=192.168.11.x
+    ```
+    Add the following lines at the end of the ```.bashrc``` file:
+    ```
+    source /opt/ros/noetic/setup.bash
+    source /home/pi/catkin_ws/devel/setup.bash
+    export ROS_MASTER_URI=http://192.168.11.2:11311
+    export ROS_IP=192.168.11.2
+    ```
 
-update wpa_supplicant.conf:
-
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
-country=GB
-network={
-    ssid="clover1"
-    psk="cloverwifi"
-    mode=2
-    proto=RSN
-    key_mgmt=WPA-PSK
-    pairwise=CCMP
-    auth_alg=OPEN
-}
-##########
-
-##########
-Go to dhcpcd.conf
-sudo nano /etc/dhcpcd.conf
-
-add these two lines in the end:
-interface wlan0
-static ip_address=192.168.11.2/24
-###############
-
-##################
-update .bashrc
-sudo nano .bashrc
-
-comment these lines:
-#export ROS_HOSTNAME=`hostname`.local
-#export ROS_HOSTNAME=192.168.11.x
-
-add these lines in the end:
-source /opt/ros/noetic/setup.bash
-source /home/pi/catkin_ws/devel/setup.bash
-export ROS_MASTER_URI=http://192.168.11.2:11311
-export ROS_IP=192.168.11.2
-###################
 
 ############
 Go to rc.local
