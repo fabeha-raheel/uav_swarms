@@ -152,79 +152,80 @@ Install Clover Raspberry Pi Image for all the drones.
     interface wlan0
     static ip_address=192.168.11.3/24
     ```
+3.  Configure the ROS Network.
 
+    Update ```.bashrc``` file:
+    ```bash
+    sudo nano .bashrc
+    ```
+    Comment the following lines:
+    ```
+    #export ROS_HOSTNAME=`hostname`.local
+    #export ROS_HOSTNAME=192.168.11.x
+    ```
+    Add the following lines at the end of the ```.bashrc``` file:
+    ```
+    source /opt/ros/noetic/setup.bash
+    source /home/pi/catkin_ws/devel/setup.bash
+    export ROS_MASTER_URI=http://192.168.11.2:11311
+    export ROS_IP=192.168.11.3
+    ```
+4.  Configure RPi to initialize the system files automatically on startup.
+    Go to ```rc.local``` file:
+    ```bash
+    sudo nano /etc/rc.local
+    ```
+    Update the ```rc.local``` file:
+    ```
+    #!/bin/bash -e
+    #
+    # rc.local
+    #
+    # This script is executed at the end of each multiuser runlevel.
+    # Make sure that the script will "exit 0" on success or any other
+    # value on error.
+    #
+    # In order to enable or disable this script just change the execution
+    # bits.
+    #
+    # By default this script does nothing.
 
-##################
-update .bashrc
-sudo nano .bashrc
+    # Print the IP address
+    _IP=$(hostname -I) || true
+    if [ "$_IP" ]; then
+    printf "My IP address is %s\n" "$_IP"
+    fi
 
-comment these lines:
+    source /home/pi/catkin_ws/devel/setup.bash
+    export ROS_MASTER_URI=http://192.168.11.2:11311
+    export ROS_IP=192.168.11.3
 
-#export ROS_HOSTNAME=`hostname`.local
-#export ROS_HOSTNAME=192.168.11.x
+    su - pi -c " source /opt/ros/noetic/setup.bash; source /home/pi/catkin_ws/devel/setup.bash; export ROS_MASTER_URI=http://192.168.11.2:11311; export ROS_IP=192.168.11.3; /opt/ros/noetic/bin/roslaunch uav_swarms follower.launch"
 
-add these lines in the end:
-source /opt/ros/noetic/setup.bash
-source /home/pi/catkin_ws/devel/setup.bash
-export ROS_MASTER_URI=http://192.168.11.2:11311
-export ROS_IP=192.168.11.3
-###################
+    exit 0
+    ```
+    Access the ```clover.service``` file:
+    ```bash
+    cd /etc/systemd/system/
+    sudo nano clover.service
+    ```
+    Update the ```clover.service``` file as follows:
+    ```
+    [Unit]
+    Description=Clover ROS package
+    Requires=roscore.service
 
-############
-Go to rc.local
-sudo nano /etc/rc.local
+    [Service]
+    User=pi
+    ExecStart=/bin/bash -c ". /home/pi/catkin_ws/devel/setup.sh; \
+                        ROS_HOSTNAME=`hostname`.local exec stdbuf -o L roslaunch uav_swarms follower.launch --wait --screen --skip-log-check \
+                        2> >(tee /tmp/clover.err)"
 
-update rc.local:
-#!/bin/bash -e
-#
-# rc.local
-#
-# This script is executed at the end of each multiuser runlevel.
-# Make sure that the script will "exit 0" on success or any other
-# value on error.
-#
-# In order to enable or disable this script just change the execution
-# bits.
-#
-# By default this script does nothing.
+    ExecStartPre=+rm /var/log/clover.log
+    StandardOutput=file:/var/log/clover.log
+    StandardError=file:/var/log/clover.log
 
-# Print the IP address
-_IP=$(hostname -I) || true
-if [ "$_IP" ]; then
-  printf "My IP address is %s\n" "$_IP"
-fi
-
-source /home/pi/catkin_ws/devel/setup.bash
-export ROS_MASTER_URI=http://192.168.11.2:11311
-export ROS_IP=192.168.11.3
-
-su - pi -c " source /opt/ros/noetic/setup.bash; source /home/pi/catkin_ws/devel/setup.bash; export ROS_MASTER_URI=http://192.168.11.2:11311; export ROS_IP=192.168.11.3; /opt/ros/noetic/bin/roslaunch uav_swarms follower.launch"
-
-exit 0
-#################
-
-##############
-update clover.service:
-cd /etc/systemd/system/
-sudo nano clover.service
-
-[Unit]
-Description=Clover ROS package
-Requires=roscore.service
-
-[Service]
-User=pi
-ExecStart=/bin/bash -c ". /home/pi/catkin_ws/devel/setup.sh; \
-                      ROS_HOSTNAME=`hostname`.local exec stdbuf -o L roslaunch uav_swarms follower.launch --wait --screen --skip-log-check \
-                      2> >(tee /tmp/clover.err)"
-
-ExecStartPre=+rm /var/log/clover.log
-StandardOutput=file:/var/log/clover.log
-StandardError=file:/var/log/clover.log
-
-[Install]
-WantedBy=multi-user.target
-#####################
-
-make sure to update mav_sysid parameter of each drone to 1 using mission_planner/QGC
-################
+    [Install]
+    WantedBy=multi-user.target
+    ```
+**Note:** Make sure to update MAV_SYSID parameter of each drone to 1 using Mission Planner / QGC.
