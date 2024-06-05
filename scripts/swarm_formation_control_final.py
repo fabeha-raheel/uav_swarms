@@ -20,6 +20,7 @@ leader = SwarmLeader(name='drone1', n_followers=2)
 
 rospy.loginfo("Waiting for Leader to switch to Guided Mode")
 leader.wait_for_guided()
+leader.set_stream_rate()
 rospy.loginfo("Leader's Mode is now GUIDED.")
 
 rospy.loginfo("Registering Followers")

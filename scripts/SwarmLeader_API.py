@@ -32,6 +32,9 @@ class SwarmLeader(MAVROS_Drone):
             this_follower.data.header.name = 'drone'+str(i+2)
             this_follower.ns = 'drone'+str(i+2)
             this_follower.data.header.id = i+2
+
+            this_follower.set_stream_rate()
+            
             self.followers.append(this_follower)
 
         # Initialize follower's ROS subscribers and publishers

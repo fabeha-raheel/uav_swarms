@@ -141,14 +141,14 @@ class MAVROS_Drone():
             rospy.wait_for_service('/mavros/set_stream_rate', timeout=3)
             try:
                 streamService = rospy.ServiceProxy('/mavros/set_stream_rate', StreamRate)
-                streamService(stream_id=0, message_rate=10, on_off=True)
+                streamService(0, 10, 1)
             except rospy.ServiceException as e:
                 print("Setting Stream Rate failed: %s" %e)
         else:
             rospy.wait_for_service(self.ns + '/mavros/set_stream_rate', timeout=3)
             try:
                 streamService = rospy.ServiceProxy(self.ns + '/mavros/set_stream_rate', StreamRate)
-                streamService(stream_id=0, message_rate=10, on_off=True)
+                streamService(0, 10, 1)
             except rospy.ServiceException as e:
                 print("Setting Stream Rate failed: %s" %e)
 
