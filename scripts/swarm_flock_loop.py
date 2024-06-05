@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import time
 import sys
@@ -9,8 +9,10 @@ takeoff_spacing = 3
 formation_offset = 3
 
 leader = SwarmLeader(name='drone1', n_followers=2)
+
+rospy.loginfo("Registering Followers")
 leader.initialize_followers()
-leader.wait_for_GPS_Fix()
+leader.wait_for_GPS_Fix()       # check if all leader and followers have GPS Fix
 
 rospy.loginfo("Setting Stream Rate")
 leader.set_stream_rate()

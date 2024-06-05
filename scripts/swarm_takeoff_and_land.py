@@ -1,14 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import time
 import sys
 
 from SwarmLeader_API import *
 
-leader = SwarmLeader(name='drone1', n_followers=2)
-leader.initialize_followers()
-leader.wait_for_GPS_Fix()
+takeoff_spacing = 3
+formation_offset = 3
 
+leader = SwarmLeader(name='drone1', n_followers=2)
+
+rospy.loginfo("Registering Followers")
+leader.initialize_followers()
+leader.wait_for_GPS_Fix()       # check if all leader and followers have GPS Fix
 
 rospy.loginfo("Setting Stream Rate")
 leader.set_stream_rate()
@@ -63,7 +67,7 @@ for follower in leader.followers:
         # leader.n_followers = leader.n_followers - 1
     
 # Leader Take-off
-target_altitude = (2*leader.n_followers)+2          # 2m spacing between each drone
+target_altitude = (takeoff_spacing*leader.n_followers)+takeoff_spacing          # 2m spacing between each drone
 leader_response = leader.takeoff(altitude=target_altitude)
 
 if leader_response.success:
@@ -75,7 +79,7 @@ else:
 # Followers Take-off
 for follower in leader.followers:
     follower_index = leader.followers.index(follower)
-    follower_response = follower.takeoff(altitude=(2*(leader.n_followers-(follower_index+1)))+2)
+    follower_response = follower.takeoff(altitude=(takeoff_spacing*(leader.n_followers-(follower_index+1)))+takeoff_spacing)
     
     if follower_response.success:
         rospy.loginfo("{follower.data.header.name} is Taking off.")

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 class Drone_Data():
     
@@ -10,13 +10,14 @@ class Drone_Data():
         self.linear_velocity = LinearVelocity()
         self.angular_velocity = AngularVelocity()
         self.linear_acceleration = LinearAcceleration()
+        self.rc = RadioChannels()
         
 
 class Header:
     def __init__(self) -> None:
         self.name = 'no-name'
         self.id = 1
-        self.mode = 'GUIDED'
+        self.mode = 'NONE'
 
 class LocalPosition:
     def __init__(self, x=0, y=0, z=0):
@@ -54,3 +55,7 @@ class LinearVelocity:
         self.vx = vx
         self.vy = vy
         self.vz = vz
+
+class RadioChannels:
+    def __init__(self):
+        self.rc = []
